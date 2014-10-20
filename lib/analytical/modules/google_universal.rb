@@ -9,6 +9,7 @@ module Analytical
       end
 
       def init_javascript(location)
+        domain = options[:domain] ? "{'cookieDomain': '#{options[:domain]}'}" : "'auto'"
         init_location(location) do
           js = <<-HTML
           <!-- Analytical Init: Google Universal -->
@@ -18,10 +19,10 @@ module Analytical
             m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
             })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-            ga('create', '#{options[:key]}', '#{options[:domain]}');
+            ga('create', '#{options[:key]}', #{domain});
             ga('send', 'pageview');
 
-          </script>          
+          </script>
           HTML
           js
         end
@@ -30,9 +31,22 @@ module Analytical
       def event(name, *args)
         data = args.first || {}
         data = data[:value] if data.is_a?(Hash)
-        data_string = !data.nil? ? ", #{data}" : ""
-        "_gaq.push(['_trackEvent', \"Event\", \"#{name}\"" + data_string + "]);"
-        "ga('send', 'event', \"Event\", \"#{name}\"" + data_string + ");"
+        ga 'send', 'event', 'Event', name, data.to_s
+      end
+
+      def custom_event(category, action, opt_label=nil, opt_value=nil)
+        ga 'send', 'event', category, action, opt_label, opt_value
+      end
+
+      def identify(id, *args)
+        ga 'set', '&uid', id
+      end
+
+      private
+
+      def ga(*array)
+        args = array.reject(&:blank?).join("', '")
+        "ga('#{args}');"
       end
     end
   end
