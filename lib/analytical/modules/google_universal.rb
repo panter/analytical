@@ -11,6 +11,18 @@ module Analytical
       def init_javascript(location)
         domain = options[:domain] ? "{'cookieDomain': '#{options[:domain]}'}" : "'auto'"
         init_location(location) do
+          identify_commands = []
+          dimension_commands = []
+          @command_store.commands.each do |c|
+            if c[0] == :identify
+              identify_commands << identify(*c[1..-1])
+            end
+            if c[0] == :dimension
+              dimension_commands << dimension(*c[1..-1])
+            end
+          end
+          @command_store.commands = @command_store.commands.delete_if {|c| c[0] == :identify || c[0] == :dimension }
+
           js = <<-HTML
           <!-- Analytical Init: Google Universal -->
           <script>
@@ -21,6 +33,8 @@ module Analytical
 
             ga('create', '#{options[:key]}', #{domain});
             ga('require', 'displayfeatures');
+            #{identify_commands.join("\n")}
+            #{dimension_commands.join("\n")}
             ga('send', 'pageview');
 
           </script>
@@ -44,7 +58,7 @@ module Analytical
       end
 
       def dimension(index, value)
-        "ga('set', 'dimension#{index}', '#{value}');"
+        ga 'set', "dimension#{index}", value
       end
 
       private
