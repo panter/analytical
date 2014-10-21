@@ -43,6 +43,10 @@ module Analytical
         ga 'set', '&uid', id
       end
 
+      def dimension(index, value)
+        "ga('set', 'dimension#{index}', '#{value}');"
+      end
+
       private
 
       def ga(*array)
