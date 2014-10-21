@@ -20,6 +20,7 @@ module Analytical
             })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
             ga('create', '#{options[:key]}', #{domain});
+            ga('require', 'displayfeatures');
             ga('send', 'pageview');
 
           </script>
